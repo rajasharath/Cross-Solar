@@ -6,7 +6,6 @@ using CrossSolar.Domain;
 using CrossSolar.Models;
 using CrossSolar.Repository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CrossSolar.Controllers
 {
@@ -24,16 +23,14 @@ namespace CrossSolar.Controllers
         }
 
         // GET panel/XXXX1111YYYY2222/analytics
-        [HttpGet("{banelId}/[controller]")]
+        [HttpGet("{panelId}/[controller]")]
         public async Task<IActionResult> Get([FromRoute] string panelId)
         {
-            var panel = await _panelRepository.Query()
-                .FirstOrDefaultAsync(x => x.Serial.Equals(panelId, StringComparison.CurrentCultureIgnoreCase));
+            var panel = await _panelRepository.GetAsync(panelId); //Changed the Query() to GetAsync()      
 
             if (panel == null) return NotFound();
 
-            var analytics = await _analyticsRepository.Query()
-                .Where(x => x.PanelId.Equals(panelId, StringComparison.CurrentCultureIgnoreCase)).ToListAsync();
+            var analytics = _analyticsRepository.Query().Where(x => x.PanelId.Equals(panelId, StringComparison.CurrentCultureIgnoreCase)).AsEnumerable();
 
             var result = new OneHourElectricityListModel
             {
@@ -42,7 +39,7 @@ namespace CrossSolar.Controllers
                     Id = c.Id,
                     KiloWatt = c.KiloWatt,
                     DateTime = c.DateTime
-                })
+                }).ToList()
             };
 
             return Ok(result);
@@ -53,6 +50,22 @@ namespace CrossSolar.Controllers
         public async Task<IActionResult> DayResults([FromRoute] string panelId)
         {
             var result = new List<OneDayElectricityModel>();
+            var analytics = _analyticsRepository.Query().Where(x => x.PanelId.Equals(panelId, StringComparison.CurrentCultureIgnoreCase)).ToList(); //Here GetAsync() is not used as the panelId is not primary key of OneHourElectricity table
+
+            var distinctDates = analytics.Select(o => o.DateTime).Distinct();
+
+            foreach (var date in distinctDates)
+            {
+                var dateRecords = analytics.Where(x => x.DateTime == date);
+
+                var dayResult = new OneDayElectricityModel();
+                dayResult.Minimum = dateRecords.Min(x => x.KiloWatt);
+                dayResult.Maximum = dateRecords.Max(x => x.KiloWatt);
+                dayResult.Sum = dateRecords.Sum(x => x.KiloWatt);
+                dayResult.Average = dateRecords.Average(x => x.KiloWatt);
+
+                result.Add(dayResult);
+            }
 
             return Ok(result);
         }

@@ -4,6 +4,8 @@ namespace CrossSolar.Models
 {
     public class OneHourElectricityListModel
     {
-        public IEnumerable<OneHourElectricityModel> OneHourElectricitys { get; set; }
+        public List<OneHourElectricityModel> OneHourElectricitys { get; set; }
+
+        //public IEnumerable<OneHourElectricityModel> OneHourElectricitys { get; set; }
     }
 }

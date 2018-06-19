@@ -1,0 +1,13 @@
+ Changed the Default Connection in appsettings.json to  "DefaultConnection": "Server=DESKTOP-O9OF5LL\\SQLEXPRESS;Database=CrossSolarDb;User ID=sa;Password=***********"
+	  
+	  Corrected the url location from banelId to panelId in Analytics Controller
+	  Changed the Query() to GetAsync() to retrieve panel information
+	  
+	  Removed the await keyword while retreibving analytics data using Get method
+	  Changed the result conversion from IEnumerable to List 
+	  
+	  Added the implementation of DayResults method
+	  
+	  Faced issue in configuring development environment because of
+	  1. Missing package Microsoft.EntityFrameworkCore.Design
+	  2.<DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" /> reference missing in WebAPI Project file
